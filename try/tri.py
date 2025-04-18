@@ -17,9 +17,7 @@ class Itemlist:
             self.item_list[item_name]["quantity"] -= quantity
         else:
             return "not enough stock"
-    def print_items(self):
-        return self.item_list
-
+    6ho
 if __name__ == "__main__":
     it = Itemlist()
     it.add_item("vita milk","30","4000")
