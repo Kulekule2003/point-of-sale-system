@@ -3,6 +3,7 @@ from sidebar import Sidebar
 from manageInventory.item_list import ItemListPage
 from manageInventory.analytics import AnalyticsPage
 from manageInventory.sales_history import SalesHistoryPage
+from sales.home_sales_dashboard import HomeSalesDashboard
 
 class DashboardApp(ctk.CTk):
     def __init__(self):
@@ -29,8 +30,7 @@ class DashboardApp(ctk.CTk):
             widget.destroy()
 
         if name == "Home":
-            label = ctk.CTkLabel(self.main_content, text="This is the home dashboard")
-            label.pack(pady=20)
+            HomeSalesDashboard(self.main_content, self.items)
         elif name == "Item List":
             ItemListPage(self.main_content, self.items)
         elif name == "analytics":
