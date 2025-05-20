@@ -30,7 +30,7 @@ class DashboardApp(ctk.CTk):
         # Regular dashboard buttons
         dashboards = ["Home"]
         for name in dashboards:
-            btn = ctk.CTkButton(self.sidebar, text=name, command=lambda n=name: self.show_dashboard(n))
+            btn = ctk.CTkButton(self.sidebar, text=name, command= self.sales_dashboard())
             btn.pack(pady=5, fill="x")
 
         # Inventory (expandable)
@@ -107,6 +107,8 @@ class DashboardApp(ctk.CTk):
     def add_item(self):
         self.item_name = ctk.CTkEntry(self.main_content, text = "item name")
         self.item_quantity = ctk.CTkEntry(self.main_content, text = "item quantity")
+
+    def 
 
 if __name__ == "__main__":
     app = DashboardApp()
