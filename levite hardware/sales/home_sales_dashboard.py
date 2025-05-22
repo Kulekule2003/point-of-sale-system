@@ -7,7 +7,7 @@ class HomeSalesDashboard:
         self.sale_rows = []
 
         # Header
-        header = ctk.CTkLabel(master, text="home/sale dashboard", font=ctk.CTkFont(size=16), fg_color="#f5f5f5", anchor="w")
+        header = ctk.CTkLabel(master, text="home/sale dashboard", font=ctk.CTkFont(size=16),anchor="w")
         header.pack(fill="x", pady=(0, 10))
 
         # Search bar
@@ -15,20 +15,20 @@ class HomeSalesDashboard:
         search_frame.pack(fill="x", padx=10)
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.update_search_results)
-        search_entry = ctk.CTkEntry(search_frame, textvariable=self.search_var, placeholder_text="seach", width=140, font=ctk.CTkFont(weight="bold"), fg_color="#e5e5e5")
+        search_entry = ctk.CTkEntry(search_frame, textvariable=self.search_var, placeholder_text="search", width=140, font=ctk.CTkFont(weight="bold"), fg_color="#e5e5e5")
         search_entry.pack(side="right", padx=2, pady=2)
 
         # Search results list
-        self.results_frame = ctk.CTkFrame(master, fg_color="white")
-        self.results_frame.pack(fill="x", padx=10)
+        self.results_frame = ctk.CTkFrame(master, fg_color="white", height=100)
+        self.results_frame.pack(fill="x", padx=10, pady=10)
         self.results_list = []
 
         # Table headers
         table_frame = ctk.CTkFrame(master, fg_color="white")
-        table_frame.pack(fill="x", padx=10)
+        table_frame.pack(fill="x", padx=10, pady=5)
         headers = ["item", "quantity", "unitcost", "cost", ""]
         for i, h in enumerate(headers):
-            ctk.CTkLabel(table_frame, text=h, font=ctk.CTkFont(weight="bold"), fg_color="#e5e5e5", width=120 if h == "item" else 80).grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
+            ctk.CTkLabel(table_frame, text=h, font=ctk.CTkFont(weight="bold"), fg_color="#CCC7C7", width=120 if h == "item" else 80).grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
 
         # Dynamic sales rows
         self.rows_frame = ctk.CTkFrame(master, fg_color="white")
@@ -37,8 +37,8 @@ class HomeSalesDashboard:
         # Controls (clear list, make purchase)
         controls_frame = ctk.CTkFrame(master, fg_color="white")
         controls_frame.pack(fill="x", padx=10, pady=(5, 0))
-        ctk.CTkButton(controls_frame, text="clear list", fg_color="#ffb3b3", hover_color="#ff6f6f", command=self.clear_all_rows).pack(side="left", padx=5, pady=5)
-        ctk.CTkButton(controls_frame, text="make purchase", fg_color="#4caf50", hover_color="#388e3c", command=self.make_purchase).pack(side="right", padx=5, pady=5)
+        ctk.CTkButton(controls_frame, text="clear list", fg_color="#e15555", hover_color="#f10a0a", command=self.clear_all_rows).pack(side="left", padx=5, pady=5)
+        ctk.CTkButton(controls_frame, text="make purchase", fg_color="#3ea942", hover_color="#107e16", command=self.make_purchase).pack(side="right", padx=5, pady=5)
 
         # Total cost display
         total_frame = ctk.CTkFrame(master, fg_color="white")
@@ -53,7 +53,6 @@ class HomeSalesDashboard:
         self.update_search_results()
 
     def update_search_results(self, *args):
-        # Clear current results
         for widget in self.results_frame.winfo_children():
             widget.destroy()
         self.results_list = []
@@ -62,7 +61,6 @@ class HomeSalesDashboard:
         if not search_text:
             return
 
-        # Show matching inventory items as buttons
         for item in self.inventory_items:
             if search_text in item["name"].lower():
                 btn = ctk.CTkButton(
@@ -74,12 +72,12 @@ class HomeSalesDashboard:
                 self.results_list.append(btn)
 
     def add_sale_row(self, item):
-        # Prevent duplicate items in sales list
         for row in self.sale_rows:
             if row["item_name"].get() == item["name"]:
                 return
 
         row = {}
+        row["item"] = item
         row["item_name"] = ctk.CTkEntry(self.rows_frame, fg_color="#e5e5e5", width=160)
         row["item_name"].insert(0, item["name"])
         row["item_name"].configure(state="readonly")
@@ -130,7 +128,6 @@ class HomeSalesDashboard:
             elif hasattr(widget, "destroy"):
                 widget.destroy()
         self.sale_rows.remove(row)
-        # Repack rows to maintain order
         for idx, r in enumerate(self.sale_rows):
             r["item_name"].grid(row=idx, column=0, padx=2, pady=2, sticky="nsew")
             r["quantity"].grid(row=idx, column=1, padx=2, pady=2, sticky="nsew")
@@ -145,17 +142,21 @@ class HomeSalesDashboard:
         self.update_total_cost()
 
     def make_purchase(self):
-        # Collect sale data, validate, and process the sale
         sale = []
         for row in self.sale_rows:
             name = row["item_name"].get().strip()
             qty = row["quantity"].get().strip()
             unitcost = row["unitcost"].get().strip()
+            item_ref = row["item"]
             if name and qty and unitcost:
                 try:
                     qty = int(qty)
                     unitcost = float(unitcost)
                     cost = qty * unitcost
+                    if qty > item_ref["quantity"]:
+                        ctk.CTkMessageBox.show_info("Stock Error", f"Not enough '{name}' in stock.")
+                        return
+                    item_ref["quantity"] -= qty  # Update stock
                     sale.append({"item": name, "quantity": qty, "unitcost": unitcost, "cost": cost})
                 except ValueError:
                     continue
@@ -165,6 +166,20 @@ class HomeSalesDashboard:
         self.clear_all_rows()
         self.total_cost_label.configure(text="0")
         ctk.CTkMessageBox.show_info("Success", "Purchase completed!")
+        # You could also write the receipt to a file or database here
 
     def print_receipt(self):
-        ctk.CTkMessageBox.show_info("Receipt", "Receipt printed (placeholder).")
+        receipt = "=== RECEIPT ===\n"
+        total = 0
+        for row in self.sale_rows:
+            name = row["item_name"].get()
+            qty = row["quantity"].get()
+            unitcost = row["unitcost"].get()
+            try:
+                cost = int(qty) * float(unitcost)
+                receipt += f"{name} x{qty} @ {unitcost} = {cost}\n"
+                total += cost
+            except:
+                continue
+        receipt += f"Total: {total}"
+        ctk.CTkMessageBox.show_info("Receipt", receipt)

@@ -12,13 +12,13 @@ class Sidebar(ctk.CTkFrame):
         # Regular dashboard buttons
         dashboards = ["Home"]
         for name in dashboards:
-            btn = ctk.CTkButton(self, text=name, command=lambda n=name: self.show_dashboard_callback(n))
+            btn = ctk.CTkButton(self,text=name, command=lambda n=name: self.show_dashboard_callback(n), height=40)
             btn.pack(pady=5, fill="x")
 
         # Inventory (expandable)
         self.inventory_expanded = False
         self.inventory_btn = ctk.CTkButton(
-            self, text="Manage Inventory ▸", command=self.toggle_inventory_submenu
+            self, text="Manage Inventory ▸", command=self.toggle_inventory_submenu, height=40
         )
         self.inventory_btn.pack(pady=(20, 5), fill="x")
 
@@ -31,7 +31,7 @@ class Sidebar(ctk.CTkFrame):
                 self.inventory_submenu_frame,
                 text=f"  • {item}",
                 command=lambda n=item: self.show_dashboard_callback(n),
-                height=30,
+                height=40,
                 fg_color="transparent",
                 anchor="w"
             )
