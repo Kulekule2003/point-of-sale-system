@@ -30,9 +30,9 @@ class DashboardApp(ctk.CTk):
             widget.destroy()
 
         if name == "Home":
-            HomeSalesDashboard(self.main_content, self.items)
+            HomeSalesDashboard(self.main_content)
         elif name == "Item List":
-            ItemListPage(self.main_content, self.items)
+            ItemListPage(self.main_content)
         elif name == "analytics":
             AnalyticsPage(self.main_content)
         elif name == "Sales History":

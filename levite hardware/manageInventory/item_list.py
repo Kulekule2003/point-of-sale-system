@@ -1,9 +1,9 @@
 import customtkinter as ctk
+from database import add_inventory_item, get_inventory
 
 class ItemListPage:
-    def __init__(self, master, items):
+    def __init__(self, master):
         self.master = master
-        self.items = items
 
         # Input Labels and Entries
         labels = ["Name:", "Quantity:", "Price:", "Unit Cost:"]
@@ -62,14 +62,7 @@ class ItemListPage:
             )
             return
 
-        item = {
-            "name": name,
-            "quantity": quantity,
-            "price": price,
-            "unit_cost": unit_cost,
-        }
-
-        self.items.append(item)
+        add_inventory_item(name, quantity, price, unit_cost)
         self.message_label.configure(text=f"Item '{name}' added successfully", text_color="green")
         self.clear_inputs()
         self.update_item_list()
@@ -81,10 +74,12 @@ class ItemListPage:
     def update_item_list(self, *args):
         search_text = self.search_var.get().lower()
         self.item_listbox.delete("1.0", ctk.END)
-        for item in self.items:
-            if search_text in item["name"].lower():
+        items = get_inventory()
+        for item in items:
+            # item = (id, name, quantity, price, unit_cost)
+            if search_text in item[1].lower():
                 item_details = (
-                    f"Name: {item['name']}, Quantity: {item['quantity']}, "
-                    f"Price: {item['price']}, Unit Cost: {item['unit_cost']}\n"
+                    f"Name: {item[1]}, Quantity: {item[2]}, "
+                    f"Price: {item[3]}, Unit Cost: {item[4]}\n"
                 )
                 self.item_listbox.insert(ctk.END, item_details)

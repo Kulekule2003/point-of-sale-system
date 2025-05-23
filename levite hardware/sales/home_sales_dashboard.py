@@ -1,13 +1,16 @@
 import customtkinter as ctk
+from sales import receipt_generator
+from CustomTkinterMessagebox import CTkMessagebox
+from database import update_inventory_quantity, record_sale, get_inventory
 
 class HomeSalesDashboard:
-    def __init__(self, master, inventory_items):
+    def __init__(self, master):
         self.master = master
-        self.inventory_items = inventory_items  # List of dicts: {"name":..., "quantity":..., "unit_cost":...}
+        self.refresh_inventory()  # Load inventory from DB
         self.sale_rows = []
 
         # Header
-        header = ctk.CTkLabel(master, text="home/sale dashboard", font=ctk.CTkFont(size=16),anchor="w")
+        header = ctk.CTkLabel(master, text="home/sale dashboard", font=ctk.CTkFont(size=16), anchor="w")
         header.pack(fill="x", pady=(0, 10))
 
         # Search bar
@@ -51,6 +54,13 @@ class HomeSalesDashboard:
         ctk.CTkButton(master, text="receipt", fg_color="#bcbcbc", hover_color="#a0a0a0", command=self.print_receipt).pack(pady=5)
 
         self.update_search_results()
+
+    def refresh_inventory(self):
+        # Load inventory from database and store as list of dicts
+        self.inventory_items = [
+            {"id": row[0], "name": row[1], "quantity": row[2], "price": row[3], "unit_cost": row[4]}
+            for row in get_inventory()
+        ]
 
     def update_search_results(self, *args):
         for widget in self.results_frame.winfo_children():
@@ -154,32 +164,38 @@ class HomeSalesDashboard:
                     unitcost = float(unitcost)
                     cost = qty * unitcost
                     if qty > item_ref["quantity"]:
-                        ctk.CTkMessageBox.show_info("Stock Error", f"Not enough '{name}' in stock.")
+                        CTkMessagebox.messagebox("Stock Error", f"Not enough '{name}' in stock.")
                         return
-                    item_ref["quantity"] -= qty  # Update stock
-                    sale.append({"item": name, "quantity": qty, "unitcost": unitcost, "cost": cost})
+                    # Update stock in DB
+                    new_quantity = item_ref["quantity"] - qty
+                    update_inventory_quantity(item_ref["id"], new_quantity)
+                    sale.append({"description": name, "quantity": qty, "amount": cost})
                 except ValueError:
                     continue
         if not sale:
-            ctk.CTkMessageBox.show_info("No items", "Please add at least one item to make a purchase.")
+            CTkMessagebox.messagebox("No items", "Please add at least one item to make a purchase.")
             return
+        total = sum(item["amount"] for item in sale)
+        record_sale(sale, total)
         self.clear_all_rows()
         self.total_cost_label.configure(text="0")
-        ctk.CTkMessageBox.show_info("Success", "Purchase completed!")
-        # You could also write the receipt to a file or database here
+        CTkMessagebox.messagebox("Success", "Purchase completed!")
+        self.refresh_inventory()  # Reload inventory from DB
 
     def print_receipt(self):
-        receipt = "=== RECEIPT ===\n"
-        total = 0
+        sale_items = []
         for row in self.sale_rows:
-            name = row["item_name"].get()
-            qty = row["quantity"].get()
-            unitcost = row["unitcost"].get()
             try:
-                cost = int(qty) * float(unitcost)
-                receipt += f"{name} x{qty} @ {unitcost} = {cost}\n"
-                total += cost
-            except:
+                description = row["item_name"].get()
+                quantity = int(row["quantity"].get())
+                amount = float(row["cost"].cget("text"))
+                sale_items.append({
+                    "description": description,
+                    "quantity": quantity,
+                    "amount": amount
+                })
+            except Exception:
                 continue
-        receipt += f"Total: {total}"
-        ctk.CTkMessageBox.show_info("Receipt", receipt)
+
+        receipt_text = receipt_generator.generate_receipt(sale_items)
+        CTkMessagebox.messagebox("Receipt", receipt_text)
