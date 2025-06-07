@@ -1,4 +1,5 @@
 import customtkinter as ctk
+
 from sidebar import Sidebar
 from manageInventory.item_list import ItemListPage
 from manageInventory.analytics import AnalyticsPage
@@ -10,25 +11,21 @@ class DashboardApp(ctk.CTk):
         super().__init__()
         self.title("Levite Hardware")
         self.geometry("900x600")
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
 
-        self.items = []
-
-        # Sidebar
+        # Sidebar (left 18% of window)
         self.sidebar = Sidebar(self, self.show_dashboard)
-        self.sidebar.grid(row=0, column=0, sticky="ns")
+        self.sidebar.place(relx=0, rely=0, relwidth=0.18, relheight=1)
 
-        # Main content area
+        # Main content area (right 82% of window, with padding)
         self.main_content = ctk.CTkFrame(self, corner_radius=10)
-        self.main_content.grid(row=0, column=1, sticky="nsew", padx=20, pady=10)
+        # 2% padding left/right, 2% top, 2% bottom
+        self.main_content.place(relx=0.20, rely=0.03, relwidth=0.78, relheight=0.94)
 
         self.show_dashboard("Home")
 
     def show_dashboard(self, name):
         for widget in self.main_content.winfo_children():
             widget.destroy()
-
         if name == "Home":
             HomeSalesDashboard(self.main_content)
         elif name == "Item List":
@@ -37,4 +34,3 @@ class DashboardApp(ctk.CTk):
             AnalyticsPage(self.main_content)
         elif name == "Sales History":
             SalesHistoryPage(self.main_content)
-
