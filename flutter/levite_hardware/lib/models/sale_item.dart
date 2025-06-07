@@ -5,7 +5,13 @@ class SaleItem {
   final int quantity;
   final double amount;
 
-  SaleItem({this.id, required this.saleId, required this.itemName, required this.quantity, required this.amount});
+  SaleItem({
+    this.id,
+    required this.saleId,
+    required this.itemName,
+    required this.quantity,
+    required this.amount,
+  });
 
   Map<String, dynamic> toMap() {
     return {

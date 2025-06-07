@@ -28,6 +28,7 @@ class DatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
+    // Inventory Table
     await db.execute('''
       CREATE TABLE inventory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,6 +38,8 @@ class DatabaseHelper {
         unit_cost REAL NOT NULL
       )
     ''');
+
+    // Sales Table
     await db.execute('''
       CREATE TABLE sales (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,6 +47,8 @@ class DatabaseHelper {
         total REAL NOT NULL
       )
     ''');
+
+    // Sale Items Table
     await db.execute('''
       CREATE TABLE sale_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,7 +61,7 @@ class DatabaseHelper {
     ''');
   }
 
-  // Inventory CRUD
+  // ========== Inventory CRUD Operations ==========
   Future<int> insertInventory(InventoryItem item) async {
     final db = await database;
     return await db.insert('inventory', item.toMap());
@@ -70,10 +75,15 @@ class DatabaseHelper {
 
   Future<int> updateInventoryQuantity(int id, int newQuantity) async {
     final db = await database;
-    return await db.update('inventory', {'quantity': newQuantity}, where: 'id = ?', whereArgs: [id]);
+    return await db.update(
+      'inventory',
+      {'quantity': newQuantity},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
-  // Sales
+  // ========== Sales Operations ==========
   Future<int> insertSale(Sale sale) async {
     final db = await database;
     return await db.insert('sales', sale.toMap());
@@ -85,6 +95,7 @@ class DatabaseHelper {
     return result.map((e) => Sale.fromMap(e)).toList();
   }
 
+  // ========== Sale Items Operations ==========
   Future<int> insertSaleItem(SaleItem item) async {
     final db = await database;
     return await db.insert('sale_items', item.toMap());
@@ -92,7 +103,17 @@ class DatabaseHelper {
 
   Future<List<SaleItem>> getSaleItems(int saleId) async {
     final db = await database;
-    final result = await db.query('sale_items', where: 'sale_id = ?', whereArgs: [saleId]);
+    final result = await db.query(
+      'sale_items',
+      where: 'sale_id = ?',
+      whereArgs: [saleId],
+    );
     return result.map((e) => SaleItem.fromMap(e)).toList();
+  }
+
+  // Close database connection
+  Future close() async {
+    final db = await instance.database;
+    db.close();
   }
 }

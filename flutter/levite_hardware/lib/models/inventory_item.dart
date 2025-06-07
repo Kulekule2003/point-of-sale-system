@@ -5,7 +5,13 @@ class InventoryItem {
   final double price;
   final double unitCost;
 
-  InventoryItem({this.id, required this.name, required this.quantity, required this.price, required this.unitCost});
+  InventoryItem({
+    this.id,
+    required this.name,
+    required this.quantity,
+    required this.price,
+    required this.unitCost,
+  });
 
   Map<String, dynamic> toMap() {
     return {

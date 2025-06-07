@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../db/database_helper.dart';
 import '../models/sale.dart';
+import '../models/sale_item.dart';  // Critical import
 
 class SalesHistoryScreen extends StatefulWidget {
   @override
@@ -18,29 +19,30 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
 
   void _refresh() async {
     final sales = await DatabaseHelper.instance.getAllSales();
-    setState(() {
-      _sales = sales;
-    });
+    setState(() => _sales = sales);
   }
 
   void _showReceipt(int saleId) async {
     final items = await DatabaseHelper.instance.getSaleItems(saleId);
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Receipt #$saleId'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: items.map((item) {
-                return Text('${item.itemName} x${item.quantity}: \$${item.amount.toStringAsFixed(2)}');
-              }).toList(),
-            ),
+      builder: (context) => AlertDialog(
+        title: Text('Receipt #$saleId'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: items.map((item) => Text(
+              '${item.itemName} x${item.quantity}: \$${item.amount.toStringAsFixed(2)}'
+            )).toList(),
           ),
-          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Close'))],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          )
+        ],
+      ),
     );
   }
 
@@ -51,20 +53,25 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sales History', style: Theme.of(context).textTheme.headlineSmall),
+          Text(
+            'Sales History',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
           SizedBox(height: 24),
           Expanded(
-            child: ListView(
-              children: _sales.map((sale) {
-                return ListTile(
-                  title: Text('Receipt #${sale.id}'),
-                  subtitle: Text('Date: ${sale.saleDate} | Total: \$${sale.total.toStringAsFixed(2)}'),
-                  trailing: TextButton(
-                    child: Text('View Receipt'),
-                    onPressed: () => _showReceipt(sale.id!),
-                  ),
-                );
-              }).toList(),
+            child: ListView.builder(
+              itemCount: _sales.length,
+              itemBuilder: (context, index) => ListTile(
+                title: Text('Receipt #${_sales[index].id}'),
+                subtitle: Text(
+                  'Date: ${_sales[index].saleDate} | '
+                  'Total: \$${_sales[index].total.toStringAsFixed(2)}'
+                ),
+                trailing: TextButton(
+                  child: Text('View Receipt'),
+                  onPressed: () => _showReceipt(_sales[index].id!),
+                ),
+              ),
             ),
           ),
         ],

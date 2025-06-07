@@ -6,10 +6,10 @@ class Sidebar(ctk.CTkFrame):
         super().__init__(master, width=200, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=0.18, relheight=1)  # Sidebar occupies left 18% of window
 
-        self.home_icon = ctk.CTkImage(light_image=Image.open("icons\home-button.png"), size=(24,24))
+        #self.home_icon = ctk.CTkImage(light_image=Image.open(".\icons\home_button.png"), size=(24,24))
         self.show_dashboard_callback = show_dashboard_callback
 
-        self.manage_icon = ctk.CTkImage(light_image=Image.open("icons\manageInventory.png"), size=(24,24))
+        #self.manage_icon = ctk.CTkImage(light_image=Image.open(".\icons\manageInventory.png"), size=(24,24))
 
         # Title
         self.title = ctk.CTkLabel(self, text="Dashboard", font=ctk.CTkFont(size=20, weight="bold"))
@@ -23,7 +23,7 @@ class Sidebar(ctk.CTkFrame):
                 self,
                 text=name,
                 command=lambda n=name: self.show_dashboard_callback(n),
-                image=self.home_icon, compound="left"
+                #image=self.home_icon, compound="left"
             )
             btn.place(relx=0.05, rely=0.12 + i * 0.08, relwidth=0.9, relheight=0.07)
 
@@ -35,7 +35,7 @@ class Sidebar(ctk.CTkFrame):
             self,
             text="Manage Inventory ▸",
             command=self.toggle_inventory_submenu,
-            image=self.manage_icon,
+            #image=self.manage_icon,
             compound="left"
         )
         self.inventory_btn.place(relx=0.05, rely=0.22, relwidth=0.9, relheight=0.07)
